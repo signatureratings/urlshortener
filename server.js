@@ -1,0 +1,13 @@
+const express = require('express')
+const app = new express()
+const env = require('dotenv')
+env.config()
+//app.use(express.static('public'))
+app.use(express.json())
+const createshorturlroute = require('./routes/createshorturl')
+const getshorturlrouter = require('./routes/getshorturl')
+app.use('/', createshorturlroute)
+app.use('/', getshorturlrouter)
+app.listen(process.env.PORT, () => {
+  console.log('Running on Port: ', process.env.PORT)
+})
