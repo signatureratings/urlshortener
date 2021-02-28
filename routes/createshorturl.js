@@ -1,18 +1,17 @@
 const express = require('express')
 const createshorturlrouter = express.Router()
 const env = require('dotenv')
-env.config()
+env.config({
+  path: '../.env',
+})
+
 const shortid = require('shortid')
 const validurl = require('valid-url')
 const { client } = require('../database')
 
-createshorturlrouter.get('/', async (req, res) => {
-  res.status(200).send('You choosed wrong Method')
-})
-
 createshorturlrouter.post('/', async (req, res) => {
   const longurl = req.body.longurl
-  const baseurl = 'http://127.0.0.1:3000'
+  const baseurl = process.env.BASEURL
   if (!validurl.isUri(baseurl)) {
     return res.send(401).json('Internal server Error. please comeback Later')
   }
@@ -25,7 +24,7 @@ createshorturlrouter.post('/', async (req, res) => {
       const result = await dbcollection.findOne({ longURL: longurl })
       if (result) {
         console.log(result)
-        return res.status(200).json(result)
+        return res.status(203).json(result.shortURL)
       } else {
         let urlCode = shortid.generate()
         let shorturl = baseurl + '/' + urlCode
@@ -37,12 +36,10 @@ createshorturlrouter.post('/', async (req, res) => {
           CreatedAt: Date(),
         }
         const result = await dbcollection.insertOne(data)
-        return res
-          .status(200)
-          .json('new one created url is ' + shorturl + ' result is ' + result)
+        return res.status(200).json(shorturl)
       }
     } catch (err) {
-      console.log(err.message)
+      // console.log(err.message)
       return res.status(500).json('Internal server Error' + err.message)
     }
   } else {
